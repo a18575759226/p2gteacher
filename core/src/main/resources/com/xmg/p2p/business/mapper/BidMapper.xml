@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.business.mapper.BidMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.business.domain.Bid" >
+    <id column="id" property="id"  />
+	<result column="availableAmount" property="availableAmount"  />
+	<result column="actualRate" property="actualRate"  />
+	<result column="bidRequestId" property="bidRequestId"  />
+	<result column="bidRequestState" property="bidRequestState"  />
+	<result column="bidRequestTitle" property="bidRequestTitle"  />
+	<result column="bidTime" property="bidTime"  />
+	
+	<association property="bidUser" javaType="com.xmg.p2p.base.domain.Logininfo" columnPrefix="bu_">
+		<id column="id" property="id"/>
+		<result column="username" property="username"/>
+	</association>
+  </resultMap>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into bid 
+    (availableAmount,actualRate,bidRequestId,bidRequestState,bidUser_id,bidRequestTitle,bidTime)
+    values 
+    (#{availableAmount},#{actualRate},#{bidRequestId},#{bidRequestState},#{bidUser.id},#{bidRequestTitle},#{bidTime})
+  </insert>
+  
+  <sql id="base_column">
+  	b.id,b.availableAmount,b.actualRate,b.bidRequestId,b.bidRequestState,b.bidUser_id,b.bidRequestTitle,b.bidTime,
+           bu.id as bu_id,bu.username as bu_username
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select <include refid="base_column" />
+    from bid b JOIN logininfo bu ON b.biduser_id = bu.id
+    where b.id = #{id}
+  </select>
+  
+  <select id="selectByBidRequestId" resultMap="BaseResultMap">
+  	select <include refid="base_column" />
+    from bid b JOIN logininfo bu ON b.biduser_id = bu.id
+    where b.bidrequestId = #{id}
+  </select>
+  
+</mapper>

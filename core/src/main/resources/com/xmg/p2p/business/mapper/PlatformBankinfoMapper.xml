@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.business.mapper.PlatformBankinfoMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.business.domain.PlatformBankinfo" >
+    <id column="id" property="id"  />
+	<result column="bankName" property="bankName"  />
+	<result column="accountName" property="accountName"  />
+	<result column="accountNumber" property="accountNumber"  />
+	<result column="forkName" property="forkName"  />
+  </resultMap>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into platformBankinfo 
+    (bankName,accountName,accountNumber,forkName)
+    values 
+    (#{bankName},#{accountName},#{accountNumber},#{forkName})
+  </insert>
+  <update id="updateByPrimaryKey">
+    update platformBankinfo
+    set
+	    bankName=#{bankName},
+	    accountName=#{accountName},
+	    accountNumber=#{accountNumber},
+	    forkName=#{forkName}
+    where id = #{id}
+  </update>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long" >
+    select id,bankName,accountName,accountNumber,forkName 
+    from platformBankinfo 
+    where id = #{id}
+  </select>
+  
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id,bankName,accountName,accountNumber,forkName  
+    from platformBankinfo
+  </select>
+  
+  <select id="queryForCount" resultType="int">
+  	SELECT COUNT(id)
+  	FROM platformBankinfo
+  </select>
+  
+  <select id="query" resultMap="BaseResultMap">
+  	SELECT id,bankName,accountName,accountNumber,forkName  
+  	FROM platformBankinfo
+  	LIMIT #{start},#{pageSize}
+  </select>
+  
+
+</mapper>

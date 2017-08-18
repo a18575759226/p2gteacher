@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.business.mapper.RechargeOfflineMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.business.domain.RechargeOffline" >
+    <id column="id" property="id"  />
+	<result column="amount" property="amount"  />
+	<result column="remark" property="remark"  />
+	<result column="tradeTime" property="tradeTime"  />
+	<result column="auditTime" property="auditTime"  />
+	<result column="state" property="state"  />
+	<result column="applyTime" property="applyTime"  />
+	<result column="note" property="note"  />
+	<result column="tradeCode" property="tradeCode"  />
+	
+	  <association property="applier" javaType="com.xmg.p2p.base.domain.Logininfo" columnPrefix="ap_">
+		  <id column="id" property="id"/>
+		  <result column="username" property="username"/>
+	  </association>
+	  <association property="auditor" javaType="com.xmg.p2p.base.domain.Logininfo" columnPrefix="au_">
+		  <id column="id" property="id"/>
+		  <result column="username" property="username"/>
+	  </association>
+	  <association property="bankinfo" javaType="com.xmg.p2p.business.domain.PlatformBankinfo" columnPrefix="bi_"
+	               resultMap="com.xmg.p2p.business.mapper.PlatformBankinfoMapper.BaseResultMap"/>
+  </resultMap>
+  
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into rechargeOffline 
+    (amount,auditor_id,remark,tradeTime,auditTime,state,applyTime,bankinfo_id,note,applier_id,tradeCode)
+    values 
+    (#{amount},#{auditor.id},#{remark},#{tradeTime},#{auditTime},#{state},#{applyTime},#{bankinfo.id},#{note},#{applier.id},#{tradeCode})
+  </insert>
+  
+  <update id="updateByPrimaryKey" >
+    update rechargeOffline
+    set
+	    amount=#{amount},
+	    auditor_id=#{auditor.id},
+	    remark=#{remark},
+	    tradeTime=#{tradeTime},
+	    auditTime=#{auditTime},
+	    state=#{state},
+	    applyTime=#{applyTime},
+	    bankinfo_id=#{bankinfo.id},
+	    note=#{note},
+	    applier_id=#{applier.id},
+	    tradeCode=#{tradeCode}
+    where id = #{id}
+  </update>
+  
+  <sql id="base_column">
+	r.id,r.amount,r.auditor_id,r.remark,r.tradeTime,r.auditTime,r.state,r.applyTime,r.bankinfo_id,r.note,r.applier_id,r.tradeCode,
+           ap.id as ap_id,ap.username as ap_username,
+           au.id as au_id,au.username as au_username,
+           bi.id as bi_id,bi.bankName as bi_bankName,bi.accountName as bi_accountName,bi.accountNumber as bi_accountNumber,bi.forkName as bi_forkName  
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long" >
+    select <include refid="base_column" />
+    from rechargeOffline r JOIN logininfo ap ON r.applier_id = ap.id 
+                           LEFT JOIN logininfo au ON r.auditor_id = au.id
+                           LEFT JOIN platformbankinfo bi ON r.bankinfo_id = bi.id
+       
+    where r.id = #{id}
+  </select>
+  
+</mapper>

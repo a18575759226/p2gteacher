@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.business.mapper.BidRequestAuditMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.business.domain.BidRequestAudit" >
+    <id column="id" property="id"  />
+	<result column="auditType" property="auditType"  />
+	<result column="remark" property="remark"  />
+	<result column="auditTime" property="auditTime"  />
+	<result column="state" property="state"  />
+	<result column="applyTime" property="applyTime"  />
+	<result column="bidRequestId" property="bidRequestId"  />
+	
+	<association property="applier" javaType="com.xmg.p2p.base.domain.Logininfo" columnPrefix="ap_">
+		  <id column="id" property="id"/>
+		  <result column="username" property="username"/>
+	  </association>
+	  <association property="auditor" javaType="com.xmg.p2p.base.domain.Logininfo" columnPrefix="au_">
+		  <id column="id" property="id"/>
+		  <result column="username" property="username"/>
+	  </association>
+  </resultMap>
+  
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into bidRequestAudit 
+    (auditType,auditor_id,remark,auditTime,state,applyTime,bidRequestId,applier_id)
+    values 
+    (#{auditType},#{auditor.id},#{remark},#{auditTime},#{state},#{applyTime},#{bidRequestId},#{applier.id})
+  </insert>
+  
+  <sql id="base_column">
+  	a.id,a.auditType,a.auditor_id,a.remark,a.auditTime,a.state,a.applyTime,a.bidRequestId,a.applier_id,
+    	   ap.id as ap_id,ap.username as ap_username,
+		   au.id as au_id,au.username as au_username
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select <include refid="base_column" />
+    from bidRequestAudit a 
+         JOIN logininfo ap on(a.applier_id = ap.id)
+         JOIN logininfo au on(a.auditor_id = au.id)
+    where a.id = #{id}
+  </select>
+  
+  <select id="listAuditsByBidRequestId" resultMap="BaseResultMap">
+  	select <include refid="base_column" />
+    from bidRequestAudit a 
+         JOIN logininfo ap on(a.applier_id = ap.id)
+         JOIN logininfo au on(a.auditor_id = au.id)
+    where a.bidRequestId = #{id}
+  </select>
+ 
+</mapper>

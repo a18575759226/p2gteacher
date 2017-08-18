@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.base.mapper.VedioAuthMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.base.domain.VedioAuth" >
+    <id column="id" property="id"  />
+	<result column="remark" property="remark"  />
+	<result column="auditTime" property="auditTime"  />
+	<result column="state" property="state"  />
+	<result column="applyTime" property="applyTime"  />
+	
+	<association property="applier" javaType="com.xmg.p2p.base.domain.Logininfo" columnPrefix="ap_">
+	  <id column="id" property="id"/>
+	  <result column="username" property="username"/>
+    </association>
+    <association property="auditor" javaType="com.xmg.p2p.base.domain.Logininfo" columnPrefix="au_">
+	  <id column="id" property="id"/>
+	  <result column="username" property="username"/>
+    </association>
+  </resultMap>
+  
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into vedioAuth 
+    (auditor_id,remark,auditTime,state,applyTime,applier_id)
+    values 
+    (#{auditor.id},#{remark},#{auditTime},#{state},#{applyTime},#{applier.id})
+  </insert>
+  
+  <sql id="base_column">
+  	va.id,va.auditor_id,va.remark,va.auditTime,va.state,va.applyTime,va.applier_id,
+           ap.id as ap_id,ap.username as ap_username,
+		   au.id as au_id,au.username as au_username
+  </sql>
+  
+  <sql id="base_where">
+  	<where>
+  		<if test="beginDate!=null">
+            AND va.applyTime &gt;= #{beginDate}
+        </if>
+        <if test="endDate!=null">
+            AND va.applyTime &lt;= #{endDate}
+        </if>
+        <if test="state>-1">
+            AND va.state = #{state}
+        </if>
+  	</where>
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="long" >
+    select <include refid="base_column" />
+    from vedioAuth va JOIN logininfo ap on(va.applier_id = ap.id)
+         JOIN logininfo au on(va.auditor_id = au.id)
+    where va.id = #{id}
+  </select>
+  
+  <select id="queryForCount" resultType="int">
+  	SELECT COUNT(va.id)
+  	FROM vedioauth va
+  	<include refid="base_where" />
+  </select>
+  
+  <select id="query" resultMap="BaseResultMap">
+  	SELECT <include refid="base_column" />
+  	FROM vedioAuth va JOIN logininfo ap on(va.applier_id = ap.id)
+         JOIN logininfo au on(va.auditor_id = au.id)
+    <include refid="base_where" />
+    LIMIT #{start},#{pageSize}
+  </select>
+  
+</mapper>

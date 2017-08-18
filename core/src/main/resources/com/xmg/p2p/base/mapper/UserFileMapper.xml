@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xmg.p2p.base.mapper.UserFileMapper" >
+  <resultMap id="BaseResultMap" type="com.xmg.p2p.base.domain.UserFile" >
+    <id column="id" property="id"  />
+	<result column="remark" property="remark"  />
+	<result column="auditTime" property="auditTime"  />
+	<result column="img" property="img"  />
+	<result column="score" property="score"  />
+	<result column="state" property="state"  />
+	<result column="applyTime" property="applyTime"  />
+	
+	<association property="applier" javaType="com.xmg.p2p.base.domain.Logininfo" columnPrefix="ap_">
+	  <id column="id" property="id"/>
+	  <result column="username" property="username"/>
+    </association>
+    <association property="auditor" javaType="com.xmg.p2p.base.domain.Logininfo" columnPrefix="au_">
+	  <id column="id" property="id"/>
+	  <result column="username" property="username"/>
+    </association>
+    <association property="fileType" javaType="com.xmg.p2p.base.domain.SystemDictionaryItem" columnPrefix="ft_">
+    	<id column="id" property="id"/>
+    	<result column="title" property="title"/>
+    </association>
+	
+  </resultMap>
+  
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" >
+    insert into userFile 
+    (fileType_id,auditor_id,remark,auditTime,img,score,state,applyTime,applier_id)
+    values 
+    (#{fileType.id},#{auditor.id},#{remark},#{auditTime},#{img},#{score},#{state},#{applyTime},#{applier.id})
+  </insert>
+  
+  <update id="updateByPrimaryKey">
+    update userFile
+    set
+	    fileType_id=#{fileType.id},
+	    auditor_id=#{auditor.id},
+	    remark=#{remark},
+	    auditTime=#{auditTime},
+	    img=#{img},
+	    score=#{score},
+	    state=#{state},
+	    applyTime=#{applyTime},
+	    applier_id=#{applier.id}
+    where id = #{id}
+  </update>
+  
+  <sql id="base_column">
+  	uf.id,uf.remark,uf.auditTime,uf.img,uf.score,uf.state,uf.applyTime,
+           ap.id as ap_id,ap.username as ap_username,
+           au.id as au_id,au.username as au_username,
+           ft.id as ft_id,ft.title as ft_title
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    SELECT <include refid="base_column"/>
+    FROM userfile uf JOIN logininfo ap ON uf.applier_id = ap.id
+                     LEFT JOIN logininfo au ON uf.auditor_id = au.id
+                     LEFT JOIN systemdictionaryitem ft ON uf.fileType_id = ft.id
+    WHERE uf.id = #{id}
+  </select>
+  
+  <select id="listSelectTypeUserFiles" resultMap="BaseResultMap">
+    SELECT <include refid="base_column"/>
+    FROM userfile uf JOIN logininfo ap ON uf.applier_id = ap.id
+                     LEFT JOIN logininfo au ON uf.auditor_id = au.id
+                     LEFT JOIN systemdictionaryitem ft ON uf.fileType_id = ft.id
+    WHERE uf.applier_id = #{userid}
+    	<if test="selected">
+    		AND uf.fileType_id IS NOT NULL
+    	</if>
+    	<if test="!selected">
+    		AND uf.fileType_id IS NULL
+    	</if>
+  </select>
+  
+  <select id="listFilesByUser" resultMap="BaseResultMap">
+  	SELECT <include refid="base_column"/>
+    FROM userfile uf JOIN logininfo ap ON uf.applier_id = ap.id
+                     LEFT JOIN logininfo au ON uf.auditor_id = au.id
+                     LEFT JOIN systemdictionaryitem ft ON uf.fileType_id = ft.id
+    WHERE uf.applier_id = #{id} AND uf.state = 1
+  </select>
+  
+  <sql id="base_where">
+  	<where>
+  		<if test="beginDate!=null">
+            AND uf.applyTime &gt;= #{beginDate}
+        </if>
+        <if test="endDate!=null">
+            AND uf.applyTime &lt;= #{endDate}
+        </if>
+        <if test="state>-1">
+            AND uf.state = #{state}
+        </if>
+        AND uf.fileType_id IS NOT NULL
+  	</where>
+  </sql>
+  
+  <select id="queryForCount" resultType="int">
+  	SELECT COUNT(uf.id)
+  	FROM userfile uf
+  	<include refid="base_where" />
+  </select>
+  
+  <select id="query" resultMap="BaseResultMap">
+  	SELECT <include refid="base_column" />
+  	FROM userfile uf JOIN logininfo ap ON uf.applier_id = ap.id
+                     LEFT JOIN logininfo au ON uf.auditor_id = au.id
+                     LEFT JOIN systemdictionaryitem ft ON uf.fileType_id = ft.id
+    <include refid="base_where" />
+    LIMIT #{start},#{pageSize}
+  </select>
+ 
+</mapper>
